@@ -102,3 +102,5 @@ dist
 
 # TernJS port file
 .tern-port
+
+**/profile_links_copy.json

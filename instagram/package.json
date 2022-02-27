@@ -1,0 +1,24 @@
+{
+  "name": "instagram-messaging",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node publish-comments.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "instagram-private-api": "^1.45.2",
+    "lodash": "^4.17.21",
+    "webdriverio": "^7.16.8",
+    "yargs": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.179",
+    "@types/yargs": "^17.0.8",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2"
+  }
+}
