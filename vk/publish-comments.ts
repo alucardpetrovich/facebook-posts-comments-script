@@ -1,31 +1,32 @@
-import { remote } from "webdriverio";
+import { remote, Element } from "webdriverio";
 import { Browser, WaitForOptions } from "webdriverio/build/types";
 import * as _ from "lodash";
 import * as fs from "fs";
-import * as yargs from "yargs";
 import * as messages from "../common/messages.json";
 import * as hashtags from "../common/hashtags.json";
-import { hideBin } from "yargs/helpers";
 import { sleep } from "../common/sleep";
+import * as yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
 const argv: any = yargs(hideBin(process.argv)).argv;
 
 const selectors = {
-  loginUsername: `form input[name="email"]`,
-  loginPassword: `form input[name="pass"]`,
-  loginSubmit: `form button[name="login"]`,
-  navigationSidebar: `div[role="navigation"]`,
-  post: `form[role="presentation"] div[contenteditable="true"]`,
-  banner: `div[aria-label="Facebook"]`,
-  commentInput: "article > div > div textarea",
-  postComment: `button[data-testid="post-comment-input-button"]`,
-  dropbox: `div[role="navigation"] div[aria-label="Account"]`,
-  logout: `div[data-nocookies="true"]`,
+  loginUsername: `:is(#index_login_form, #login_form) input[name="email"]`,
+  loginPassword: `:is(#index_login_form, #login_form) input[name="pass"]`,
+  loginSubmit: `:is(#index_login_form, #login_form) button`,
+  publishPostInput: "div#post_field",
+  postList: `[data-post-id]:not([data-post-id=""]).post`,
+  commentButton: (id: string) => `#${id} [data-like-button-type="comment"]`,
+  commentInput: (id: string) => `#${id} [contenteditable="true"]`,
+  sendCommentButton: (id: string) => `#${id} button[id]:not([id=""])`,
+  dropbox: `a#top_profile_link`,
+  logout: `a#top_logout_link`,
 };
 
 const options = {
-  sleep: argv.sleep || 15,
-  timeout: argv.timeout || 10,
+  sleep: argv.sleep || 30,
+  timeout: argv.timeout || 15,
+  postsPerPage: argv.postsPerPage || 3,
   login: argv.login,
   password: argv.password,
 };
@@ -40,13 +41,16 @@ async function main() {
   });
 
   try {
-    await browser.navigateTo("https://facebook.com");
+    await browser.navigateTo("https://vk.com");
 
+    await browser.$(selectors.loginUsername).waitForClickable(waitOpts);
+    await browser.$(selectors.loginUsername).click();
     await browser.$(selectors.loginUsername).setValue(options.login);
+    await browser.$(selectors.loginPassword).click();
     await browser.$(selectors.loginPassword).setValue(options.password);
     await browser.$(selectors.loginSubmit).click();
 
-    await browser.$(selectors.banner).waitForClickable(waitOpts);
+    await browser.$(selectors.publishPostInput).waitForClickable(waitOpts);
 
     if (!fs.existsSync("profile_links_copy.json")) {
       await fs.promises.writeFile(
@@ -70,7 +74,7 @@ async function main() {
 
     await fs.promises.unlink("profile_links_copy.json");
   } finally {
-    await browser.navigateTo("https://facebook.com");
+    await browser.navigateTo("https://vk.com");
     await browser.$(selectors.dropbox).waitForDisplayed(waitOpts);
     await browser.$(selectors.dropbox).click();
 
@@ -89,13 +93,33 @@ async function publishCommentsToPosts(
   try {
     await browser.navigateTo(profileLink);
 
-    await browser.$(selectors.post).waitForClickable(waitOpts);
+    await browser.$(selectors.postList).waitForDisplayed(waitOpts);
 
-    const message = prepareMessage(await selectMessage());
-    await browser.$(selectors.post).setValue(message);
-    await browser.keys("Enter");
+    const postIds = await browser
+      .$$(selectors.postList)
+      .map((currentValue: Element<"async">) => currentValue.getAttribute("id"));
 
-    await sleep(options.sleep * 1000);
+    for (let i = 0; i < options.postsPerPage; i++) {
+      const postId = postIds[i];
+      await browser
+        .$(selectors.commentButton(postId))
+        .waitForClickable(waitOpts);
+      await browser.$(selectors.commentButton(postId)).click();
+
+      const message = prepareMessage(await selectMessage());
+
+      await browser
+        .$(selectors.commentInput(postId))
+        .waitForClickable(waitOpts);
+      await browser.$(selectors.commentInput(postId)).setValue(message);
+
+      await browser
+        .$(selectors.sendCommentButton(postId))
+        .waitForClickable(waitOpts);
+      await browser.$(selectors.sendCommentButton(postId)).click();
+
+      await sleep(options.sleep * 1000);
+    }
   } catch (err) {
     console.log(`error occured with ${profileLink}`, err);
   }

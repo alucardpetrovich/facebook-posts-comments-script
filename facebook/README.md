@@ -1,4 +1,4 @@
-# Instagram
+# Facebook
 
 ### Як запустити
 - Установити Node.js, якщо ще не установлений (https://nodejs.org/uk/download/)

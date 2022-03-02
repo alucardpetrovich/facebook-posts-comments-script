@@ -4,7 +4,7 @@ import * as _ from "lodash";
 import * as fs from "fs";
 import * as messages from "../common/messages.json";
 import * as hashtags from "../common/hashtags.json";
-import { sleep } from "./sleep";
+import { sleep } from "../common/sleep";
 import * as yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -29,8 +29,6 @@ const options = {
   login: argv.login,
   password: argv.password,
 };
-
-console.log(options);
 
 const waitOpts: WaitForOptions = {
   timeout: options.timeout * 1000,
