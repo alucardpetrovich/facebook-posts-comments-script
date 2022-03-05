@@ -1,0 +1,23 @@
+{
+  "name": "ok.ru",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "webdriverio": "^7.16.16",
+    "yargs": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.179",
+    "@types/yargs": "^17.0.8",
+    "ts-node": "^10.6.0",
+    "typescript": "^4.6.2"
+  }
+}
